@@ -8,11 +8,14 @@
 
 #ifdef OPT
 #define OUT_FILE "opt.txt"
+entry *hashTable[MAX_TABLE_SIZE] = {NULL};
+entry *tableHead[MAX_TABLE_SIZE] = {NULL};
 #else
 #define OUT_FILE "orig.txt"
 #endif
 
 #define DICT_FILE "./dictionary/words.txt"
+#define MAX_TABLE_SIZE 1024
 
 static double diff_in_second(struct timespec t1, struct timespec t2)
 {
@@ -25,6 +28,17 @@ static double diff_in_second(struct timespec t1, struct timespec t2)
         diff.tv_nsec = t2.tv_nsec - t1.tv_nsec;
     }
     return (diff.tv_sec + diff.tv_nsec / 1000000000.0);
+}
+
+unsigned int BKDRHash(char *str)
+{
+    unsigned int seed = 31;
+    unsigned int hash = 0;
+
+    while(*str)
+        hash = hash * seed + (*str++);
+
+    return (hash % MAX_TABLE_SIZE);
 }
 
 int main(int argc, char *argv[])
@@ -58,7 +72,19 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0';
         i = 0;
+
+#ifdef OPT
+        unsigned int hashVal = BKDRHash(line);
+
+        if (hashTable[hashVal] == NULL) {
+            hashTable[hashVal] = (entry *) malloc(sizeof(entry));
+            tableHead[hashVal] = hashTable[hashVal];
+        }
+
+        hashTable[hashVal] = append(line, hashTable[hashVal]);
+#else
         e = append(line, e);
+#endif
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
@@ -66,11 +92,14 @@ int main(int argc, char *argv[])
     /* close file as soon as possible */
     fclose(fp);
 
-    e = pHead;
-
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
+#ifndef OPT
     e = pHead;
+#else
+    unsigned int hashVal = BKDRHash(input);
+    e = tableHead[hashVal];
+#endif
 
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
