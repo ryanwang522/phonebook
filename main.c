@@ -6,10 +6,12 @@
 
 #include IMPL
 
-#ifdef OPT
+#if OPT == 1
 #define OUT_FILE "opt.txt"
 entry *hashTable[MAX_TABLE_SIZE] = {NULL};
 entry *tableHead[MAX_TABLE_SIZE] = {NULL};
+#elif OPT == 2
+#define OUT_FILE "bst.txt"
 #else
 #define OUT_FILE "orig.txt"
 #endif
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
         line[i - 1] = '\0';
         i = 0;
 
-#ifdef OPT
+#if OPT == 1
         unsigned int hashVal = BKDRHash(line);
 
         if (hashTable[hashVal] == NULL) {
@@ -86,6 +88,7 @@ int main(int argc, char *argv[])
         e = append(line, e);
 #endif
     }
+
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
 
@@ -94,23 +97,40 @@ int main(int argc, char *argv[])
 
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
+
 #ifndef OPT
     e = pHead;
+#elif OPT == 2
+    /* Build BST from a sorted linked-list */
+    treeNode *root = BuildBST(&pHead, Length(pHead));
 #else
     unsigned int hashVal = BKDRHash(input);
     e = tableHead[hashVal];
 #endif
 
+#if OPT == 2
+    assert(findName(input, root) &&
+           "Did you implement findName() in " IMPL "?");
+    assert(0 == strcmp(findName(input, root)->lastName, "zyxel"));
+#else
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
+#endif
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
+
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
+
+#if OPT == 2
+    findName(input, root);
+#else
     findName(input, e);
+#endif
+
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
 
@@ -121,8 +141,10 @@ int main(int argc, char *argv[])
     printf("execution time of append() : %lf sec\n", cpu_time1);
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
-    if (pHead->pNext) free(pHead->pNext);
-    free(pHead);
+    if (pHead != NULL) {
+        if (pHead->pNext) free(pHead->pNext);
+        free(pHead);
+    }
 
     return 0;
 }
