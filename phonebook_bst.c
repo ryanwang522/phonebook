@@ -19,7 +19,7 @@ int Length(entry *head)
 
 treeNode *BuildBST(entry **headRef, int length)
 {
-    if(length <= 0)
+    if (length <= 0)
         return NULL;
 
     treeNode *left = BuildBST(headRef, length/2);
@@ -62,4 +62,3 @@ entry *append(char lastName[], entry *e)
 
     return e;
 }
-

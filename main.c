@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
     printf("execution time of findName() : %lf sec\n", cpu_time2);
 
     if (pHead != NULL) {
-        if (pHead->pNext) free(pHead->pNext);
+        free(pHead->pNext);
         free(pHead);
     }
 

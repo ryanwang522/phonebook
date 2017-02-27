@@ -3,8 +3,6 @@
 
 #define MAX_LAST_NAME_SIZE 16
 
-/* TODO: After modifying the original version, uncomment the following
- * line to set OPT properly */
 #define OPT 2
 
 typedef struct __PHONE_BOOK_DETAIL_ENTRY {
